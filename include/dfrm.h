@@ -1,18 +1,12 @@
-#ifndef __VOX_H_
-#define __VOX_H_
+#ifndef __DFRM_H_
+#define __DFRM_H_
 
 //! Includes
 #define __NO_SCROLLED__ // Uncomment this define to prevent the embedded editor (ScrollEd) from being compiled
 #include "Scroll.h"
 
-#include "VoxObject.h"
-#include "VoxCursor.h"
-#include "VoxSoundSurface.h"
-#include "VoxOctaveSurface.h"
-
-
-//! Vox class
-class Vox : public Scroll<Vox>
+//! DFRM class
+class DFRM : public Scroll<DFRM>
 {
 public:
 
@@ -31,34 +25,18 @@ public:
   };
 
                 orxFLOAT        GetTime() const         {return mfTime;}
-                orxOBJECT *     GetCameraObject() const {return mpstCameraObject;}
                 GameState       GetGameState() const    {return meGameState;}
           const orxOBJECT *     GetSplashObject()       {return mpstSplashObject;}
                 void            ClearSplashObject()     {mpstSplashObject = orxNULL;}
 
                 void            LoadMenu();
 
-                void            SetSoundSurface(VoxSoundSurface *_poSoundSurface)     {mpoSoundSurface = _poSoundSurface;}
-                VoxSoundSurface *GetSoundSurface() const                              {return mpoSoundSurface;}
-
-                void            SetOctaveSurface(VoxOctaveSurface *_poOctaveSurface)  {mpoOctaveSurface = _poOctaveSurface;}
-                VoxOctaveSurface *GetOctaveSurface() const                            {return mpoOctaveSurface;}
-
 
 private:
 
                 orxSTATUS       Start();
 
-                void            InitUI();
                 void            InitSplash();
-                void            InitScene();
-
-                void            ExitUI();
-                void            ExitScene();
-
-                void            UpdateGame(const orxCLOCK_INFO &_rstInfo);
-                void            UpdateInput(const orxCLOCK_INFO &_rstInfo);
-                void            UpdateUI(const orxCLOCK_INFO &_rstInfo);
 
                 void            Update(const orxCLOCK_INFO &_rstInfo);
 
@@ -68,13 +46,9 @@ private:
                 void            BindObjects();
 
                 GameState       meGameState;
-                orxOBJECT *     mpstCameraObject;
                 orxOBJECT *     mpstSplashObject;
-                orxOBJECT *     mpstPauseObject;
-                VoxSoundSurface *mpoSoundSurface;
-                VoxOctaveSurface *mpoOctaveSurface;
                 ScrollObject *  mpoScene;
                 orxFLOAT        mfTime;
 };
 
-#endif // __VOX_H_
+#endif // __DFRM_H_

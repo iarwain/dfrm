@@ -61,7 +61,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="orxd.lib"
-				OutputFile="..\..\bin\windows\voxd.exe"
+				OutputFile="..\..\bin\windows\dfrmd.exe"
 				AdditionalLibraryDirectories="..\..\lib\windows"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
@@ -139,7 +139,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="orx.lib"
-				OutputFile="..\..\bin\windows\vox.exe"
+				OutputFile="..\..\bin\windows\dfrm.exe"
 				AdditionalLibraryDirectories="..\..\lib\windows"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
@@ -220,7 +220,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="orxp.lib"
-				OutputFile="..\..\bin\windows\voxp.exe"
+				OutputFile="..\..\bin\windows\dfrmp.exe"
 				AdditionalLibraryDirectories="..\..\lib\windows"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"

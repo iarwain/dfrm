@@ -1,13 +1,12 @@
 //! Includes
 #define __SCROLL_IMPL__
-#include "Vox.h"
+#include "dfrm.h"
 #undef __SCROLL_IMPL__
 
 
 //! Constants
 static  const orxSTRING szConfigSectionGame         = "Game";
 static  const orxSTRING szConfigSectionMainViewport = "MainViewport";
-static  const orxSTRING szConfigSectionSave         = "Save";
 static  const orxSTRING szConfigSectionSplash       = "Splash";
 
 static  const orxSTRING szInputAction               = "Action";
@@ -15,12 +14,6 @@ static  const orxSTRING szInputQuit                 = "Quit";
 
 
 //! Code
-static orxBOOL orxFASTCALL SaveCallback(const orxSTRING _zSectionName, const orxSTRING _zKeyName, const orxSTRING _zFileName, orxBOOL _bUseEncryption)
-{
-  // Done!
-  return (!orxString_Compare(_zSectionName, szConfigSectionSave));
-}
-
 orxSTATUS orxFASTCALL EventHandler(const orxEVENT *_pstEvent)
 {
   orxSTATUS eResult = orxSTATUS_SUCCESS;
@@ -28,6 +21,27 @@ orxSTATUS orxFASTCALL EventHandler(const orxEVENT *_pstEvent)
   // Depending on event type
   switch(_pstEvent->eType)
   {
+    case orxEVENT_TYPE_SHADER:
+    {
+      // Set param?
+      if(_pstEvent->eID == orxSHADER_EVENT_SET_PARAM)
+      {
+        orxSHADER_EVENT_PAYLOAD *pstPayload;
+
+        // Gets its payload
+        pstPayload = (orxSHADER_EVENT_PAYLOAD *)_pstEvent->pstPayload;
+
+        // Time?
+        if(!orxString_Compare(pstPayload->zParamName, "Time"))
+        {
+          // Updates its value
+          pstPayload->fValue = DFRM::GetInstance().GetTime();
+        }
+      }
+
+      break;
+    }
+
     case orxEVENT_TYPE_OBJECT:
     {
       // Deleted?
@@ -36,7 +50,7 @@ orxSTATUS orxFASTCALL EventHandler(const orxEVENT *_pstEvent)
         orxOBJECT *pstObject;
 
         // Gets game instance
-        Vox &roGame = Vox::GetInstance();
+        DFRM &roGame = DFRM::GetInstance();
 
         // Gets object
         pstObject = orxOBJECT(_pstEvent->hSender);
@@ -65,14 +79,14 @@ orxSTATUS orxFASTCALL EventHandler(const orxEVENT *_pstEvent)
   return eResult;
 }
 
-void Vox::LoadMenu()
+void DFRM::LoadMenu()
 {
   //! TODO
   // Starts
   Start();
 }
 
-orxSTATUS Vox::Start()
+orxSTATUS DFRM::Start()
 {
   orxSTATUS eResult = orxSTATUS_SUCCESS;
 
@@ -92,12 +106,7 @@ orxSTATUS Vox::Start()
   return eResult;
 }
 
-void Vox::InitUI()
-{
-  //! TODO
-}
-
-void Vox::InitSplash()
+void DFRM::InitSplash()
 {
   // Not in editor mode?
   if(!IsEditorMode())
@@ -119,100 +128,11 @@ void Vox::InitSplash()
   }
 }
 
-void Vox::InitScene()
-{
-  orxVECTOR vPosition;
-
-  // Creates scene
-  mpoScene = CreateObject("Scene");
-
-  // Updates listener position
-  orxConfig_GetVector("ListenerPosition", &vPosition);
-  orxSoundSystem_SetListenerPosition(&vPosition);
-}
-
-void Vox::ExitUI()
-{
-}
-
-void Vox::ExitScene()
-{
-  // Deletes scene
-  DeleteObject(mpoScene);
-}
-
-void Vox::UpdateGame(const orxCLOCK_INFO &_rstInfo)
+void DFRM::Update(const orxCLOCK_INFO &_rstInfo)
 {
   // Updates in game time
   mfTime += _rstInfo.fDT;
 
-  // Updates input
-  UpdateInput(_rstInfo);
-
-  // Updates UI
-  UpdateUI(_rstInfo);
-}
-
-void Vox::UpdateInput(const orxCLOCK_INFO &_rstInfo)
-{
-  orxVECTOR vMousePos;
-
-  // Pushes game section
-  orxConfig_PushSection(szConfigSectionGame);
-
-  // Gets world mouse position
-  if(orxRender_GetWorldPosition(orxMouse_GetPosition(&vMousePos), &vMousePos) != orxNULL)
-  {
-    VoxObject *apoObjectList[] = {mpoOctaveSurface, mpoSoundSurface};
-
-    // Updates pixking depth
-    vMousePos.fZ = orxFLOAT_0;
-
-    // For all surfaces
-    for(orxS32 i = 0, iCounter = sizeof(apoObjectList) / sizeof(VoxObject *); i < iCounter; i++)
-    {
-      // Active or new status?
-      if(orxInput_IsActive(szInputAction) || orxInput_HasNewStatus(szInputAction))
-      {
-        // Relays the input
-        apoObjectList[i]->SetInput(vMousePos, orxInput_IsActive(szInputAction));
-      }
-      // Double action?
-      else if(orxInput_IsActive("DoubleAction") || orxInput_HasNewStatus("DoubleAction"))
-      {
-        // Is octave surface?
-        if(apoObjectList[i] == mpoOctaveSurface)
-        {
-          // Relays the special input
-          apoObjectList[i]->SetInput(vMousePos, orxInput_IsActive("DoubleAction"), orxTRUE);
-        }
-        else
-        {
-          // Relays the double input
-          vMousePos.fY = orxMAX(orxFLOAT_0, vMousePos.fY - orx2F(75.0f));
-          vMousePos.fX = orxMAX(orx2F(112.0f), vMousePos.fX - orx2F(75.0f));
-          apoObjectList[i]->SetInput(vMousePos, orxInput_IsActive("DoubleAction"));
-          vMousePos.fY = orxMIN(orx2F(768.0f), vMousePos.fY + orx2F(75.0f));
-          vMousePos.fX = orxMIN(orx2F(1024.0f), vMousePos.fX + orx2F(75.0f));
-          apoObjectList[i]->SetInput(vMousePos, orxInput_IsActive("DoubleAction"));
-        }
-      }
-    }
-
-    //! TODO
-  }
-
-  // Pops config section
-  orxConfig_PopSection();
-}
-
-void Vox::UpdateUI(const orxCLOCK_INFO &_rstInfo)
-{
-  //! TODO
-}
-
-void Vox::Update(const orxCLOCK_INFO &_rstInfo)
-{
   // Depending on game state
   switch(meGameState)
   {
@@ -235,9 +155,6 @@ void Vox::Update(const orxCLOCK_INFO &_rstInfo)
 
     case GameStateRun:
     {
-      // Updates in-game
-      UpdateGame(_rstInfo);
-
       break;
     }
 
@@ -253,7 +170,7 @@ void Vox::Update(const orxCLOCK_INFO &_rstInfo)
   }
 }
 
-orxSTATUS Vox::Init()
+orxSTATUS DFRM::Init()
 {
   orxSTATUS eResult = orxSTATUS_SUCCESS;
 
@@ -265,32 +182,27 @@ orxSTATUS Vox::Init()
 
   // Init values
   meGameState       = GameStateSplash;
-  mpstCameraObject  = orxNULL;
   mpstSplashObject  = orxNULL;
-  mpstPauseObject   = orxNULL;
-  mpoScene          = orxNULL;
   mfTime            = orxFLOAT_0;
 
-  // Inits splash screen
-  InitSplash();
-
-  // Inits UI
-  InitUI();
-
-  // Inits scene
-  InitScene();
+  // Creates scene
+  mpoScene = CreateObject("Scene");
 
   // Pops config section
   orxConfig_PopSection();
 
   // Adds event handler
   orxEvent_AddHandler(orxEVENT_TYPE_OBJECT, EventHandler);
+  orxEvent_AddHandler(orxEVENT_TYPE_SHADER, EventHandler);
+
+  // Inits splash
+  InitSplash();
 
   // Done!
   return eResult;
 }
 
-orxSTATUS Vox::Run()
+orxSTATUS DFRM::Run()
 {
   orxSTATUS eResult = orxSTATUS_SUCCESS;
 
@@ -305,36 +217,24 @@ orxSTATUS Vox::Run()
   return eResult;
 }
 
-void Vox::Exit()
+void DFRM::Exit()
 {
   // Removes event handler
+  orxEvent_RemoveHandler(orxEVENT_TYPE_SHADER, EventHandler);
   orxEvent_RemoveHandler(orxEVENT_TYPE_OBJECT, EventHandler);
 
-  // Exits from scene
-  ExitScene();
-
-  // Exits from UI
-  ExitUI();
+  // Deletes scene
+  DeleteObject(mpoScene);
 }
 
-void Vox::BindObjects()
+void DFRM::BindObjects()
 {
-  // Pushes game section
-  orxConfig_PushSection(szConfigSectionGame);
-
-  // Binds objects
-  ScrollBindObject<VoxCursor>("Cursor");
-  ScrollBindObject<VoxOctaveSurface>("OctaveSurface");
-  ScrollBindObject<VoxSoundSurface>("SoundSurface");
-
-  // Pops section
-  orxConfig_PopSection();
 }
 
 int main(int argc, char **argv)
 {
   // Executes game
-  Vox::GetInstance().Execute(argc, argv);
+  DFRM::GetInstance().Execute(argc, argv);
 
   // Done!
   return EXIT_SUCCESS;
@@ -347,7 +247,7 @@ int main(int argc, char **argv)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
   // Executes game
-  Vox::GetInstance().Execute();
+  DFRM::GetInstance().Execute();
 
   // Done!
   return EXIT_SUCCESS;
