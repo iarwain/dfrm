@@ -24,10 +24,13 @@ public:
 
   };
 
-                orxFLOAT        GetTime() const         {return mfTime;}
-                GameState       GetGameState() const    {return meGameState;}
-          const orxOBJECT *     GetSplashObject()       {return mpstSplashObject;}
-                void            ClearSplashObject()     {mpstSplashObject = orxNULL;}
+                orxFLOAT        GetTime() const           {return mfTime;}
+          const orxVECTOR &     GetPosition() const       {return mvPos;}
+          const orxVECTOR &     GetDirection() const      {return mvDir;}
+                void            SetFocus(orxBOOL _bFocus) {mbFocus = _bFocus;}
+                GameState       GetGameState() const      {return meGameState;}
+          const orxOBJECT *     GetSplashObject()         {return mpstSplashObject;}
+                void            ClearSplashObject()       {mpstSplashObject = orxNULL;}
 
                 void            LoadMenu();
 
@@ -45,6 +48,9 @@ private:
                 void            Exit();
                 void            BindObjects();
 
+                orxVECTOR       mvPos, mvDir, mvSpeed;
+                orxFLOAT        mfIntensity;
+                orxBOOL         mbFocus;
                 GameState       meGameState;
                 orxOBJECT *     mpstSplashObject;
                 ScrollObject *  mpoScene;
