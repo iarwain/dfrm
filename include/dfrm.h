@@ -27,6 +27,9 @@ public:
                 orxFLOAT        GetTime() const           {return mfTime;}
           const orxVECTOR &     GetPosition() const       {return mvPos;}
           const orxVECTOR &     GetDirection() const      {return mvDir;}
+                orxBOOL         Distort() const           {return mbDistort;}
+                orxBOOL         Bump() const              {return mbBump;}
+                orxBOOL         Repeat() const            {return mbRepeat;}
                 void            SetFocus(orxBOOL _bFocus) {mbFocus = _bFocus;}
                 GameState       GetGameState() const      {return meGameState;}
           const orxOBJECT *     GetSplashObject()         {return mpstSplashObject;}
@@ -50,7 +53,7 @@ private:
 
                 orxVECTOR       mvPos, mvDir, mvSpeed;
                 orxFLOAT        mfIntensity;
-                orxBOOL         mbFocus;
+                orxBOOL         mbFocus, mbDistort, mbBump, mbRepeat;
                 GameState       meGameState;
                 orxOBJECT *     mpstSplashObject;
                 ScrollObject *  mpoScene;
