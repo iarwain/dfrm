@@ -21,6 +21,10 @@ static  const orxSTRING szInputBackward             = "Backward";
 static  const orxSTRING szInputHeading              = "Heading";
 static  const orxSTRING szInputPitch                = "Pitch";
 
+static  const orxSTRING szInputDistort              = "Distort";
+static  const orxSTRING szInputBump                 = "Bump";
+static  const orxSTRING szInputRepeat               = "Repeat";
+
 
 //! Code
 orxSTATUS orxFASTCALL EventHandler(const orxEVENT *_pstEvent)
@@ -79,6 +83,24 @@ orxSTATUS orxFASTCALL EventHandler(const orxEVENT *_pstEvent)
 
           // Updates its value
           pstPayload->fValue = vTemp.fPhi - orxMATH_KF_PI_BY_2;
+        }
+        // Distort?
+        else if(!orxString_Compare(pstPayload->zParamName, "distort"))
+        {
+          // Updates its value
+          pstPayload->fValue = DFRM::GetInstance().Distort() ? orxFLOAT_1 : orxFLOAT_0;
+        }
+        // Bump?
+        else if(!orxString_Compare(pstPayload->zParamName, "bump"))
+        {
+          // Updates its value
+          pstPayload->fValue = DFRM::GetInstance().Bump() ? orxFLOAT_1 : orxFLOAT_0;
+        }
+        // Repeat?
+        else if(!orxString_Compare(pstPayload->zParamName, "repeat"))
+        {
+          // Updates its value
+          pstPayload->fValue = DFRM::GetInstance().Repeat() ? orxFLOAT_1 : orxFLOAT_0;
         }
       }
 
@@ -255,11 +277,24 @@ void DFRM::Update(const orxCLOCK_INFO &_rstInfo)
         vTemp.fZ = mvDir.fY;
         orxVector_FromCartesianToSpherical(&vTemp, &vTemp);
         vTemp.fPhi += mfIntensity * -orxMATH_KF_DEG_TO_RAD * orxInput_GetValue(szInputPitch);
-        vTemp.fPhi = orxMAX(orxMATH_KF_EPSILON, orxMIN(vTemp.fPhi, orxMATH_KF_PI - orxMATH_KF_EPSILON));
+        vTemp.fPhi = orxMAX(orx2F(0.01f), orxMIN(vTemp.fPhi, orxMATH_KF_PI - orx2F(0.01f)));
         orxVector_FromSphericalToCartesian(&vTemp, &vTemp);
         mvDir.fX = vTemp.fY;
         mvDir.fY = vTemp.fZ;
         mvDir.fZ = vTemp.fX;
+      }
+
+      if(orxInput_IsActive(szInputDistort) && orxInput_HasNewStatus(szInputDistort))
+      {
+        mbDistort = !mbDistort;
+      }
+      if(orxInput_IsActive(szInputBump) && orxInput_HasNewStatus(szInputBump))
+      {
+        mbBump = !mbBump;
+      }
+      if(orxInput_IsActive(szInputRepeat) && orxInput_HasNewStatus(szInputRepeat))
+      {
+        mbRepeat = !mbRepeat;
       }
 
       // Captures the mouse cursor
@@ -301,6 +336,9 @@ orxSTATUS DFRM::Init()
   mpstSplashObject  = orxNULL;
   mfTime            = orxFLOAT_0;
   mbFocus           = orxFALSE;
+  mbDistort         = orxFALSE;
+  mbBump            = orxFALSE;
+  mbRepeat          = orxFALSE;
   mfIntensity       = orxConfig_GetFloat("Intensity");
   orxConfig_GetVector("Speed", &mvSpeed);
 
