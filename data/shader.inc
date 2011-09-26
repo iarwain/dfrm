@@ -71,7 +71,7 @@ float map(in vec3 _vPos, out int _iID)
   mat2  mRot  = mat2(fCos, -fSin, fSin, fCos);
   vec3  vCol  = getEarthColor(_vPos);
   vTest       = vec3(mRot * _vPos.xy, _vPos.z);
-  float fBump = 0.01 * (vCol.x + vCol.y + vCol.z) * bump;
+  float fBump = 0.03 * (vCol.x + vCol.y + vCol.z) * bump;
   float d2    = sphere(vTest - vEarth, 0.8) - fBump;
 
   // Applies repeat on last sphere
@@ -241,7 +241,10 @@ void main()
       vColor = vColor * (0.2 + 0.8 * dot(vNorm, vToL)) / (0.4 * fToL);
 
       // Adds soft shadowing
-      vColor *= getShadow(vLight, -vToL, 0.01, fToL - 0.2);
+      if(shadow != 0.0)
+      {
+        vColor *= getShadow(vLight, -vToL, 0.01, fToL - 0.2);
+      }
 
       break;
     }

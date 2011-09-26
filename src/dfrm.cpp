@@ -237,6 +237,7 @@ void DFRM::Update(const orxCLOCK_INFO &_rstInfo)
     case GameStateRun:
     {
       orxVECTOR vTemp;
+      static orxBOOL sbFirstTime = orxTRUE;
 
       if(orxInput_IsActive(szInputLeft))
       {
@@ -258,30 +259,37 @@ void DFRM::Update(const orxCLOCK_INFO &_rstInfo)
         orxVector_Neg(&vTemp, &mvDir);
         orxVector_Add(&mvPos, &mvPos, orxVector_Mulf(&vTemp, &vTemp, mvSpeed.fY * _rstInfo.fDT));
       }
-      if(orxInput_IsActive(szInputHeading))
+      if(!sbFirstTime)
       {
-        vTemp.fX = mvDir.fZ;
-        vTemp.fY = mvDir.fX;
-        vTemp.fZ = mvDir.fY;
-        orxVector_FromCartesianToSpherical(&vTemp, &vTemp);
-        vTemp.fTheta += mfIntensity * orxMATH_KF_DEG_TO_RAD * orxInput_GetValue(szInputHeading);
-        orxVector_FromSphericalToCartesian(&vTemp, &vTemp);
-        mvDir.fX = vTemp.fY;
-        mvDir.fY = vTemp.fZ;
-        mvDir.fZ = vTemp.fX;
+        if(orxInput_IsActive(szInputHeading))
+        {
+          vTemp.fX = mvDir.fZ;
+          vTemp.fY = mvDir.fX;
+          vTemp.fZ = mvDir.fY;
+          orxVector_FromCartesianToSpherical(&vTemp, &vTemp);
+          vTemp.fTheta += mfIntensity * orxMATH_KF_DEG_TO_RAD * orxInput_GetValue(szInputHeading);
+          orxVector_FromSphericalToCartesian(&vTemp, &vTemp);
+          mvDir.fX = vTemp.fY;
+          mvDir.fY = vTemp.fZ;
+          mvDir.fZ = vTemp.fX;
+        }
+        if(orxInput_IsActive(szInputPitch))
+        {
+          vTemp.fX = mvDir.fZ;
+          vTemp.fY = mvDir.fX;
+          vTemp.fZ = mvDir.fY;
+          orxVector_FromCartesianToSpherical(&vTemp, &vTemp);
+          vTemp.fPhi += mfIntensity * -orxMATH_KF_DEG_TO_RAD * orxInput_GetValue(szInputPitch);
+          vTemp.fPhi = orxMAX(orx2F(0.01f), orxMIN(vTemp.fPhi, orxMATH_KF_PI - orx2F(0.01f)));
+          orxVector_FromSphericalToCartesian(&vTemp, &vTemp);
+          mvDir.fX = vTemp.fY;
+          mvDir.fY = vTemp.fZ;
+          mvDir.fZ = vTemp.fX;
+        }
       }
-      if(orxInput_IsActive(szInputPitch))
+      else
       {
-        vTemp.fX = mvDir.fZ;
-        vTemp.fY = mvDir.fX;
-        vTemp.fZ = mvDir.fY;
-        orxVector_FromCartesianToSpherical(&vTemp, &vTemp);
-        vTemp.fPhi += mfIntensity * -orxMATH_KF_DEG_TO_RAD * orxInput_GetValue(szInputPitch);
-        vTemp.fPhi = orxMAX(orx2F(0.01f), orxMIN(vTemp.fPhi, orxMATH_KF_PI - orx2F(0.01f)));
-        orxVector_FromSphericalToCartesian(&vTemp, &vTemp);
-        mvDir.fX = vTemp.fY;
-        mvDir.fY = vTemp.fZ;
-        mvDir.fZ = vTemp.fX;
+        sbFirstTime = orxFALSE;
       }
 
       if(orxInput_IsActive(szInputDistort) && orxInput_HasNewStatus(szInputDistort))
@@ -330,8 +338,8 @@ orxSTATUS DFRM::Init()
   orxConfig_PushSection(szConfigSectionGame);
 
   // Init values
-  orxVector_SetAll(&mvPos, orxFLOAT_0);
-  orxVector_Set(&mvDir, orxFLOAT_0, orxFLOAT_0, orxFLOAT_1);
+  orxConfig_GetVector("Position", &mvPos);
+  orxConfig_GetVector("Direction", &mvDir);
   meGameState       = GameStateSplash;
   mpstSplashObject  = orxNULL;
   mfTime            = orxFLOAT_0;
