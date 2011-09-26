@@ -1,3 +1,28 @@
+// Pseudo random number base generator (credits go to iq/rgba)
+float rnd(vec2 x)
+{
+    int n = int(x.x * 40.0 + x.y * 6400.0);
+    n = (n << 13) ^ n;
+    return 1.0 - float( (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0;
+}
+
+// Generate cubic interpolated random values
+float smoothrnd(vec2 x)
+{
+    x = mod(x,1000.0);
+    vec2 a = fract(x);
+    x -= a;
+    vec2 u = a*a*(3.0-2.0*a);
+    return mix(
+    mix(rnd(x+vec2(0.0)),rnd(x+vec2(1.0,0.0)), u.x),
+    mix(rnd(x+vec2(0.0,1.0)),rnd(x+vec2(1.0)), u.x), u.y);
+}
+// Convert the cipher range from [-1,1] to [0,1]
+float norm(float x)
+{
+    return x * 0.5 + 0.5;
+}
+
 vec3 rotateY(in vec3 _vDir, in float _fAngle)
 {
   return vec3(_vDir.x * cos(_fAngle) + _vDir.z * sin(_fAngle), _vDir.y, _vDir.z * cos(_fAngle) - _vDir.x * sin(_fAngle));
@@ -161,6 +186,14 @@ vec3 getReflection(in vec3 _vPos, in vec3 _vDir)
   return vResult;
 }
 
+vec3 getSky(in vec3 _vDir, in vec3 _vToL)
+{
+  float fPhi    = atan(_vDir.x, _vDir.z);
+  float fTheta  = acos(_vDir.y / length(_vDir));
+
+  return vec3(smoothstep(0.0, 0.5, norm(0.5 * smoothrnd(300.0 * vec2(fPhi, fTheta))) + norm(0.75 * smoothrnd(500.0 * vec2(fPhi, fTheta))) - 1.25) * clamp(1.0 - _vToL.y, 0.0, 1.0));
+}
+              
 void main()
 {
   // Gets camera position & direction
@@ -175,12 +208,13 @@ void main()
   vLight = vec3(1.5 * sin(3.14 * 0.5 * time), 2.0, 1.5 * cos(3.14 * 0.5 * time));
 
   float fDist, fStep;
+  vec3  vTest;
   for(fDist = 0.0; fDist < 10.0; fDist += fStep)
   {
     int iID;
 
     // Gets test position
-    vec3 vTest = vPos + fDist * vDir;
+    vTest = vPos + fDist * vDir;
 
     // Maps it
     fStep = map(vTest, iID);
@@ -204,18 +238,20 @@ void main()
       }
 
       // Adds lighting
-      vColor  = vColor * (0.1+0.8*dot(vNorm, vToL)) / (0.4 * fToL);
+      vColor = vColor * (0.2 + 0.8 * dot(vNorm, vToL)) / (0.4 * fToL);
 
       // Adds soft shadowing
       vColor *= getShadow(vLight, -vToL, 0.01, fToL - 0.2);
-
-      // Adds distance fog
-      vColor  = vColor * exp2(-0.4 * fDist);
 
       break;
     }
   }
 
+  if(fDist >= 10.0)
+  {
+    vColor += getSky(vDir, normalize(vLight - vTest));
+  }
+  
   // Updates fragement color
   gl_FragColor = vec4(vColor, 1.0);
 }
