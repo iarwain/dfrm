@@ -21,6 +21,7 @@ static  const orxSTRING szInputBackward             = "Backward";
 static  const orxSTRING szInputHeading              = "Heading";
 static  const orxSTRING szInputPitch                = "Pitch";
 
+static  const orxSTRING szInputScreenshot           = "Screenshot";
 static  const orxSTRING szInputInvertY              = "InvertY";
 static  const orxSTRING szInputDistort              = "Distort";
 static  const orxSTRING szInputBump                 = "Bump";
@@ -293,6 +294,10 @@ void DFRM::Update(const orxCLOCK_INFO &_rstInfo)
         sbFirstTime = orxFALSE;
       }
 
+      if(orxInput_IsActive(szInputScreenshot) && orxInput_HasNewStatus(szInputScreenshot))
+      {
+        orxScreenshot_Capture();
+      }
       if(orxInput_IsActive(szInputInvertY) && orxInput_HasNewStatus(szInputInvertY))
       {
         mfInvertY *= -orxFLOAT_1;
