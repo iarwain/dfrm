@@ -21,6 +21,7 @@ static  const orxSTRING szInputBackward             = "Backward";
 static  const orxSTRING szInputHeading              = "Heading";
 static  const orxSTRING szInputPitch                = "Pitch";
 
+static  const orxSTRING szInputInvertY              = "InvertY";
 static  const orxSTRING szInputDistort              = "Distort";
 static  const orxSTRING szInputBump                 = "Bump";
 static  const orxSTRING szInputRepeat               = "Repeat";
@@ -279,7 +280,7 @@ void DFRM::Update(const orxCLOCK_INFO &_rstInfo)
           vTemp.fY = mvDir.fX;
           vTemp.fZ = mvDir.fY;
           orxVector_FromCartesianToSpherical(&vTemp, &vTemp);
-          vTemp.fPhi += mfIntensity * -orxMATH_KF_DEG_TO_RAD * orxInput_GetValue(szInputPitch);
+          vTemp.fPhi += mfIntensity * mfInvertY * orxMATH_KF_DEG_TO_RAD * orxInput_GetValue(szInputPitch);
           vTemp.fPhi = orxMAX(orx2F(0.01f), orxMIN(vTemp.fPhi, orxMATH_KF_PI - orx2F(0.01f)));
           orxVector_FromSphericalToCartesian(&vTemp, &vTemp);
           mvDir.fX = vTemp.fY;
@@ -292,6 +293,10 @@ void DFRM::Update(const orxCLOCK_INFO &_rstInfo)
         sbFirstTime = orxFALSE;
       }
 
+      if(orxInput_IsActive(szInputInvertY) && orxInput_HasNewStatus(szInputInvertY))
+      {
+        mfInvertY *= -orxFLOAT_1;
+      }
       if(orxInput_IsActive(szInputDistort) && orxInput_HasNewStatus(szInputDistort))
       {
         mbDistort = !mbDistort;
@@ -348,6 +353,7 @@ orxSTATUS DFRM::Init()
   mbBump            = orxFALSE;
   mbRepeat          = orxFALSE;
   mfIntensity       = orxConfig_GetFloat("Intensity");
+  mfInvertY         = -orxFLOAT_1;
   orxConfig_GetVector("Speed", &mvSpeed);
 
   // Loads config file

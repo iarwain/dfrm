@@ -52,7 +52,7 @@ private:
                 void            BindObjects();
 
                 orxVECTOR       mvPos, mvDir, mvSpeed;
-                orxFLOAT        mfIntensity;
+                orxFLOAT        mfIntensity, mfInvertY;
                 orxBOOL         mbFocus, mbDistort, mbBump, mbRepeat;
                 GameState       meGameState;
                 orxOBJECT *     mpstSplashObject;
