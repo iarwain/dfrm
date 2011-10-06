@@ -103,6 +103,32 @@ float map(in vec3 _vPos, out int _iID)
   return d;
 }
 
+float mapShadow(in vec3 _vPos)
+{
+  vec3 vMod   = vec3(0.0, 0.0, repeat * 0.0011 * floor(1000.0 * sin(3.14 * 0.1 * time)));
+  vec3 vTest  = _vPos;
+
+  // Distorted earth
+  float fDist = 0.6 * abs(sin(time * 0.5)) * distort;
+  float fCos  = cos(fDist * _vPos.y);
+  float fSin  = sin(fDist * _vPos.y);
+  mat2  mRot  = mat2(fCos, -fSin, fSin, fCos);
+  vec3  vCol  = getEarthColor(_vPos);
+  vTest       = vec3(mRot * _vPos.xy, _vPos.z);
+  float fBump = 0.03 * (vCol.x + vCol.y + vCol.z) * bump;
+  float d2    = sphere(vTest - vEarth, 0.8) - fBump;
+
+  // Applies repeat on last sphere
+  vTest = mod(_vPos, vMod) - 0.5 * vMod;
+  float d3 = sphere(vTest - vec3(0.0, 1.2, 0.0), 0.2);
+
+  // Gets full scene distance
+  float d = min(d3, d2);
+
+  // Done!
+  return d;
+}
+
 vec3 getNormal(in vec3 _vPos)
 {
   int   iID;
@@ -145,17 +171,17 @@ float getShadow(in vec3 _vPos, in vec3 _vDir, in float _fMin, in float _fMax)
 
   for(fDist = _fMin; fDist < _fMax; fDist += fStep)
   {
-    int iID;
-    fStep = map(_vPos + _vDir * fDist, iID);
+    vec3  vTest = _vPos + _vDir * fDist;
+    fStep = mapShadow(vTest);
+
+    fResult = min(fResult, 64.0 * fStep / fDist);
 
     if(fStep < 0.001)
     {
-      fResult = 0.0;
+      fResult = 0.1;
 
       break;
     }
-
-    fResult = min(fResult, 64.0 * fStep / fDist);
   }
 
   return fResult;
@@ -237,14 +263,14 @@ void main()
         vColor += getReflection(vTest, reflect(vDir, vNorm));
       }
 
-      // Adds lighting
-      vColor = vColor * (0.2 + 0.8 * dot(vNorm, vToL)) / (0.4 * fToL);
-
       // Adds soft shadowing
       if(shadow != 0.0)
       {
-        vColor *= getShadow(vLight, -vToL, 0.01, fToL - 0.2);
+        vColor *= getShadow(vLight, -vToL, 0.1, fToL - 0.2);
       }
+
+      // Adds lighting
+      vColor = vColor * (0.2 + 0.8 * dot(vNorm, vToL)) / (0.4 * fToL);
 
       break;
     }
