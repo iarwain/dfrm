@@ -7,7 +7,6 @@
 //! Constants
 static  const orxSTRING szConfigSectionGame         = "Game";
 static  const orxSTRING szConfigSectionShader       = "Shader";
-static  const orxSTRING szConfigSectionMainViewport = "MainViewport";
 static  const orxSTRING szConfigSectionSplash       = "Splash";
 
 static  const orxSTRING szInputAction               = "Action";
@@ -388,9 +387,6 @@ orxSTATUS DFRM::Init()
 
   // Frees code buffer
   orxMemory_Free(zCode);
-
-  // Creates viewport
-  orxViewport_CreateFromConfig(szConfigSectionMainViewport);
 
   // Creates scene
   mpoScene = CreateObject("Scene");
