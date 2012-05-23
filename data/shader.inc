@@ -64,14 +64,19 @@ float map(in vec3 _vPos, out int _iID)
   float d1    = ribbon2(vTest);
   float d4    = ribbon1(vTest);
 
-  // Distorted earth
+  // // Distorted earth
+  // vTest       = rotateY(_vPos, distort * 3.0 * 3.14 * cos(time * 3.14 * 0.2) * _vPos.y);
+  // vec3  vCol  = getEarthColor(_vPos);
+  // float fBump = 0.05 * cos(time * 3.14 * 0.8) * (vCol.x + vCol.y + vCol.z) * bump;
+  // float d2    = sphere(vTest - vEarth, 0.8) - fBump;
+
   float fDist = 0.6 * abs(sin(time * 0.5)) * distort;
   float fCos  = cos(fDist * _vPos.y);
   float fSin  = sin(fDist * _vPos.y);
   mat2  mRot  = mat2(fCos, -fSin, fSin, fCos);
   vec3  vCol  = getEarthColor(_vPos);
   vTest       = vec3(mRot * _vPos.xy, _vPos.z);
-  float fBump = 0.03 * (vCol.x + vCol.y + vCol.z) * bump;
+  float fBump = sin(time * 1.2) * 0.04 * (vCol.x + vCol.y + vCol.z) * bump;
   float d2    = sphere(vTest - vEarth, 0.8) - fBump;
 
   // Applies repeat on last sphere
@@ -107,6 +112,12 @@ float mapShadow(in vec3 _vPos)
 {
   vec3 vMod   = vec3(0.0, 0.0, repeat * 0.0011 * floor(1000.0 * sin(3.14 * 0.1 * time)));
   vec3 vTest  = _vPos;
+
+  // // Distorted earth
+  // vTest       = rotateY(_vPos, distort * 3.0 * 3.14 * cos(time * 3.14 * 0.2) * _vPos.y);
+  // vec3  vCol  = getEarthColor(_vPos);
+  // float fBump = 0.05 * cos(time * 3.14 * 0.8) * (vCol.x + vCol.y + vCol.z) * bump;
+  // float d2    = sphere(vTest - vEarth, 0.8) - fBump;
 
   // Distorted earth
   float fDist = 0.6 * abs(sin(time * 0.5)) * distort;
@@ -219,7 +230,7 @@ vec3 getSky(in vec3 _vDir, in vec3 _vToL)
 
   return vec3(smoothstep(0.0, 0.5, norm(0.5 * smoothrnd(300.0 * vec2(fPhi, fTheta))) + norm(0.75 * smoothrnd(500.0 * vec2(fPhi, fTheta))) - 1.25) * clamp(1.0 - _vToL.y, 0.0, 1.0));
 }
-              
+
 void main()
 {
   // Gets camera position & direction
@@ -231,10 +242,11 @@ void main()
   vec3 vColor = vec3(0.02, 0.02, 0.02);
 
   // Moves light
-  vLight = vec3(1.5 * sin(3.14 * 0.5 * time), 2.0, 1.5 * cos(3.14 * 0.5 * time));
+  vLight = vec3(1.5 * sin(3.14 * 0.5 * time), 3.0, 1.5 * cos(3.14 * 0.5 * time));
 
   float fDist, fStep;
   vec3  vTest;
+  // for(fDist = 0.0; fDist < 10.0; fDist += mix(1.0, 0.1, step(0.01, fStep)) * fStep)
   for(fDist = 0.0; fDist < 10.0; fDist += fStep)
   {
     int iID;
@@ -280,7 +292,7 @@ void main()
   {
     vColor += getSky(vDir, normalize(vLight - vTest));
   }
-  
+
   // Updates fragement color
   gl_FragColor = vec4(vColor, 1.0);
 }
